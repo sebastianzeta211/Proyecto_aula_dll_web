@@ -36,16 +36,10 @@
             Olvidaste tu contraseña?</a>
         </div>
   
-        <v-text-field
-          v-model="password"
-          :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
-          :type="visible ? 'text' : 'password'"
-          density="compact"
-          placeholder="Ingresa tu contraseña"
-          prepend-inner-icon="mdi-lock-outline"
-          variant="underlined"
-          @click:append-inner="visible = !visible"
-        ></v-text-field>
+        <v-text-field v-model="password" :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+          :type="visible ? 'text' : 'password'" density="compact" placeholder="Ingresa tu contraseña"
+          prepend-inner-icon="mdi-lock-outline" variant="underlined"
+          @click:append-inner="visible = !visible"></v-text-field>
   
         <v-btn
           block
@@ -72,18 +66,7 @@
       </v-card>
     </div>
   </template>
-  
-  <script>
-  
-  export default {
-
-  };
-  definePageMeta({
-  layout: "blank",
-  });
-  </script>
-  
-  <style scoped>
+  <style>
   .login-container{
   
   justify-content: center;
@@ -96,3 +79,57 @@
   
   
   </style>
+  <script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      email: '',
+      password: '',
+      visible: false,
+      users: [],
+      emailRules: [
+        value => {
+          if (value) return true
+          return 'El campo es obligatorio.'
+        },
+        value => {
+          if (/[^[^@]+@[^@]+\.[a-zA-Z]{2,}$/.test(value)) return true
+          return 'Correo no valido.'
+        }
+      ],
+    };
+  },
+  methods: {
+    async getUsers() {
+      try {
+        const response = await axios.get('http://localhost:3001/users');
+        this.users = response.data;
+      } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+      }
+    },
+    async login() {
+      await this.getUsers();
+
+      const foundUser = this.users.find(
+        user =>
+          user.email === this.email && user.password === this.password
+      );
+
+      if (foundUser) {
+        console.log('Inicio de sesión exitoso para el usuario:', foundUser);
+        this.$router.push('/index');
+      } else {
+        console.error('Credenciales incorrectas. Inicio de sesión fallido.');
+      }
+    },
+  },
+};
+definePageMeta({
+  layout: "blank",
+});
+  </script>
+  
+  
